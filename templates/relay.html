@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>RELAY Configuration</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf-8">
+      $(document).ready(function() {
+        var csrftoken = $('meta[name=csrf-token]').attr('content');
+
+        $('form#submit').submit(function(event) {
+                let relaynumber = document.getElementById("channels_id");
+                let relaynumberval = relaynumber.options[relaynumber.selectedIndex].text;
+                let relayvalue = document.getElementById("relayvalueid");
+                let relayvaluetext = relayvalue.options[relayvalue.selectedIndex].text;
+                var values = {};
+                if(relayvalue){
+                  values['relaychan'] = relaynumberval;
+                  values['relayvalue'] = relayvaluetext;
+                }            
+                
+                console.log(values);
+
+                $.ajax({
+                    beforeSend: function(xhr, settings) {
+                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken)
+                        }
+                    },
+                    type: "POST",
+                    url: "/relay",
+                    // The key needs to match your method's input parameter (case-sensitive).
+                    data: JSON.stringify(values),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    cache: false,
+                    success: function (result) {
+
+                    }
+                }).done(
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 100)
+                );
+                return false;
+            });
+
+      });
+    </script>
+    <style>
+        #relayconfig_id {
+          font-family: Arial, Helvetica, sans-serif;
+          border-collapse: collapse;
+        }
+        
+        #relayconfig_id td, #relayconfig_id th {
+          border: 1px solid #ddd;
+          padding: 8px;
+          width: 200px;
+        }
+        
+        #relayconfig_id tr:nth-child(even){background-color: #f2f2f2;}
+        
+        #relayconfig_id tr:hover {background-color: #ddd;}
+        
+        #relayconfig_id th {
+          padding-top: 12px;
+          padding-bottom: 12px;
+          text-align: left;
+          background-color: #042baa;
+          color: white;
+        }
+        .checkbox{
+            text-align: center;
+        /*Centering the text in a td of the table*/
+        }
+      </style>
+</head>
+<body>
+    <div>
+        <br>
+        <h2>RELAY Configuration</h2>
+    </div>
+    {% if is_table == true %}
+    {{ table|safe }}
+    {% else %}
+    <p>No records available</p>
+    {% endif %}
+    <br>
+    <form id="submit" method="POST" action="#">
+      <label for="relaynumberlabel">Relay Number: </label>
+      <select  id = "channels_id" class="styled-select">
+        {% for item in channels %}
+        <option> {{item|safe}} </option>
+        {% endfor %}
+      </select>
+      <br><br>
+      <label for="relayvaluelabel">Relay Value: </label>
+      <select  id = "relayvalueid" class="styled-select">
+        <option value="open">Open</option>
+        <option value="close">Close</option>
+      </select>
+      <br><br>
+      <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
